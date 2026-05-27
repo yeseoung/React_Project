@@ -1,63 +1,23 @@
-import { useState, useRef } from "react";
-import "./App.css";
-import Header from "./components/Header";
-import TodoEditor from "./components/TodoEditor";
-import TodoList from "./components/TodoList";
-
-const mockTodo = [
-  {
-    id: 0,
-    isDone: false,
-    content: "React 공부하기",
-    createdDate: new Date().getTime(),
-  },
-  {
-    id: 1,
-    isDone: false,
-    content: "빨래 널기",
-    createdDate: new Date().getTime(),
-  },
-  {
-    id: 2,
-    isDone: false,
-    content: "노래 연습하기",
-    createdDate: new Date().getTime(),
-  },
-];
+import { Routes, Route, Navigate } from "react-router-dom";
+import Layout from "./components/Layout";
+import TeamListPage from "./pages/TeamListPage";
+import TeamCreatePage from "./pages/TeamCreatePage";
+import TeamDetailPage from "./pages/TeamDetailPage";
+import SchedulePage from "./pages/SchedulePage";
+import RolePage from "./pages/RolePage";
 
 function App() {
-  const [todo, setTodo] = useState(mockTodo);
-  const idRef = useRef(3);
-
-  const onCreate = (content) => {
-    const newItem = {
-      id: idRef.current,
-      content,
-      isDone: false,
-      createdDate: new Date().getTime(),
-    };
-    setTodo([newItem, ...todo]);
-    idRef.current += 1;
-  };
-
-  const onUpdate = (targetId) => {
-    setTodo(
-      todo.map((it) =>
-        it.id === targetId ? { ...it, isDone: !it.isDone } : it
-      )
-    );
-  };
-
-  const onDelete = (targetId) => {
-    setTodo(todo.filter((it) => it.id !== targetId));
-  };
-
   return (
-    <div className="App">
-      <Header />
-      <TodoEditor onCreate={onCreate} />
-      <TodoList todo={todo} onUpdate={onUpdate} onDelete={onDelete} />
-    </div>
+    <Routes>
+      <Route element={<Layout />}>
+        <Route path="/" element={<Navigate to="/teams" replace />} />
+        <Route path="/teams" element={<TeamListPage />} />
+        <Route path="/teams/new" element={<TeamCreatePage />} />
+        <Route path="/teams/:teamId" element={<TeamDetailPage />} />
+        <Route path="/teams/:teamId/schedules" element={<SchedulePage />} />
+        <Route path="/teams/:teamId/roles" element={<RolePage />} />
+      </Route>
+    </Routes>
   );
 }
 
