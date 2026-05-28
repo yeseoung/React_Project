@@ -1,4 +1,6 @@
+import axios from "axios";
 const STORAGE_KEY = "makebozo_frontend_data";
+const  api = axios.create({baseURL : "http://127.0.0.1:8000/api",})
 
 const initialData = {
   teams: [],
@@ -37,21 +39,21 @@ export async function getTeamById(teamId) {
 }
 
 export async function createTeam(teamInput) {
-  const data = loadData();
-
-  const newTeam = {
-    id: createId(data.teams),
-    name: teamInput.name,
-    description: teamInput.description,
-    createdBy: teamInput.createdBy || "김지유",
-    members: teamInput.members || ["김지유"],
-  };
-
-  data.teams.push(newTeam);
-  saveData(data);
-
-  return newTeam;
+  try {
+    // axios.post(주소, 보낼 데이터) -> 알아서 JSON으로 압축해서 보냄
+    const response = await api.post("/teams", {
+      name: teamInput.name,
+      description: teamInput.description,
+      createdBy: teamInput.createdBy,
+      members: teamInput.members, // ["장세미", "고예성"] 배열 형태
+    });
+    return response.data; // FastAPI가 리턴한 생성된 팀 객체
+  } catch (error) {
+    console.error("팀 생성 중 에러 발생:", error.response?.data);
+    throw error;
+  }
 }
+
 
 export async function getSchedulesByTeamId(teamId) {
   const data = loadData();

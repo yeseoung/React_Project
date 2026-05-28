@@ -8,8 +8,8 @@ function TeamCreatePage() {
   const [form, setForm] = useState({
     name: "",
     description: "",
-    createdBy: "김지유",
-    membersText: "김지유, 장세미, 고예성, 서주희",
+    createdBy: "",
+    membersText: "",
   });
 
   const [error, setError] = useState("");
@@ -80,6 +80,7 @@ function TeamCreatePage() {
             name="createdBy"
             value={form.createdBy}
             onChange={handleChange}
+            placeholder="필수 입력사항입니다."
           />
         </label>
 
