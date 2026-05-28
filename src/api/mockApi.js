@@ -1,46 +1,9 @@
 const STORAGE_KEY = "makebozo_frontend_data";
 
 const initialData = {
-  teams: [
-    {
-      id: 1,
-      name: "소프트웨어공학 팀프로젝트",
-      description: "팀플 일정 및 역할관리 서비스 개발",
-      createdBy: "장세미",
-      members: ["장세미", "고예성", "김지유", "서주희"],
-    },
-  ],
-  schedules: [
-    {
-      id: 1,
-      teamId: 1,
-      title: "최종 발표 준비",
-      description: "PPT와 발표 대본 정리",
-      startDate: "2026-04-10",
-      endDate: "2026-06-01",
-      createdBy: "서주희",
-    },
-  ],
-  roles: [
-    {
-      id: 1,
-      teamId: 1,
-      title: "프론트엔드 화면 구현",
-      description: "팀 목록, 일정, 역할 분담 화면 구현",
-      assignedTo: "장세미",
-      dueDate: "2026-05-27",
-      status: "in_progress",
-    },
-    {
-      id: 2,
-      teamId: 1,
-      title: "백엔드 DB 설계",
-      description: "팀, 일정, 역할 테이블 설계",
-      assignedTo: "고예성",
-      dueDate: "2026-05-29",
-      status: "todo",
-    },
-  ],
+  teams: [],
+  schedules: [],
+  roles: []
 };
 
 function loadData() {

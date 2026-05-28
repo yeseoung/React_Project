@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import {
-  createRole,
-  deleteRole,
-  getRolesByTeamId,
-  getTeamById,
-  updateRoleStatus,
+  createRole, //역할생성
+  deleteRole, //역할삭제
+  getRolesByTeamId, //아이디기반 역할참조
+  getTeamById, //아이디기반 팀참조
+  updateRoleStatus, //역할 갱신
 } from "../api/mockApi";
 import RoleForm from "../components/RoleForm";
 import RoleList from "../components/RoleList";

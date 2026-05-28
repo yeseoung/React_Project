@@ -9,10 +9,8 @@ function Layout() {
         </Link>
         <nav className="nav">
           <Link to="/teams">팀 목록</Link>
-          <Link to="/teams/new">팀 생성</Link>
         </nav>
       </header>
-
       <main className="main">
         <Outlet />
       </main>
