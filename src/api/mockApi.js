@@ -8,6 +8,58 @@ const initialData = {
   roles: []
 };
 
+/**
+ * 🔄 [GET] 데이터베이스로부터 전체 팀 목록을 조회하는 함수
+ * @returns {Promise<Array>} 파이썬 백엔드가 정제해서 보내준 팀 객체 배열
+ */
+export async function getTeams() {
+  try {
+    // 🐍 FastAPI의 @app.get("/api/teams") 엔드포인트를 호출합니다.
+    const response = await api.get("/teams");
+    
+    // 백엔드에서 정제해 준 [ { id, name, description, createdBy, members: [...] }, ... ] 리턴
+    return response.data; 
+  } catch (error) {
+    console.error("❌ 백엔드로부터 팀 목록을 가져오는 중 에러 발생:", error.response?.data || error.message);
+    throw error;
+  }
+}
+
+/**
+ * 🚀 [POST] 새로운 팀과 팀원 목록을 데이터베이스에 저장하는 함수
+ * @param {Object} teamInput - { name, description, createdBy, members: ["이름1", "이름2"] }
+ */
+export async function createTeam(teamInput) {
+  try {
+    // 🐍 FastAPI의 @app.post("/api/teams") 엔드포인트로 JSON 데이터를 전송합니다.
+    const response = await api.post("/teams", {
+      name: teamInput.name,
+      description: teamInput.description,
+      createdBy: teamInput.createdBy,
+      members: teamInput.members, // 문자열 배열 형태 그대로 전달
+    });
+    return response.data; // MySQL에 저장된 후 생성된 신규 팀 객체(id 포함) 리턴
+  } catch (error) {
+    console.error("❌ 팀 생성 중 에러 발생:", error.response?.data || error.message);
+    throw error;
+  }
+}
+
+/**
+ * 🗑️ [DELETE] 특정 팀을 데이터베이스에서 완전히 삭제하는 함수
+ * @param {number} teamId - 삭제할 팀의 고유 ID (PK)
+ */
+export async function deleteTeam(teamId) {
+  try {
+    // 🐍 FastAPI의 @app.delete("/api/teams/{team_id}") 엔드포인트를 URL 파라미터와 함께 호출합니다.
+    const response = await api.delete(`/teams/${teamId}`);
+    return response.data;
+  } catch (error) {
+    console.error("❌ 팀 삭제 중 에러 발생:", error.response?.data || error.message);
+    throw error;
+  }
+}
+
 function loadData() {
   const saved = localStorage.getItem(STORAGE_KEY);
 
@@ -28,32 +80,15 @@ function createId(items) {
   return Math.max(...items.map((item) => item.id)) + 1;
 }
 
-export async function getTeams() {
-  const data = loadData();
-  return data.teams;
-}
-
 export async function getTeamById(teamId) {
-  const data = loadData();
-  return data.teams.find((team) => team.id === Number(teamId));
-}
-
-export async function createTeam(teamInput) {
   try {
-    // axios.post(주소, 보낼 데이터) -> 알아서 JSON으로 압축해서 보냄
-    const response = await api.post("/teams", {
-      name: teamInput.name,
-      description: teamInput.description,
-      createdBy: teamInput.createdBy,
-      members: teamInput.members, // ["장세미", "고예성"] 배열 형태
-    });
-    return response.data; // FastAPI가 리턴한 생성된 팀 객체
+    const response = await api.get(`/teams/${teamId}`);
+    return response.data; // 파이썬이 리턴한 단일 팀 객체 반환
   } catch (error) {
-    console.error("팀 생성 중 에러 발생:", error.response?.data);
-    throw error;
+    console.error(`❌ ${teamId}번 팀 로드 실패:`, error);
+    return null; // 에러 발생 시 null을 리턴하여 예외 처리
   }
 }
-
 
 export async function getSchedulesByTeamId(teamId) {
   const data = loadData();
@@ -144,21 +179,5 @@ export async function updateRoleStatus(roleId, status) {
 export async function deleteRole(roleId) {
   const data = loadData();
   data.roles = data.roles.filter((role) => role.id !== Number(roleId));
-  saveData(data);
-}
-
-export async function deleteTeam(teamId) {
-  const data = loadData();
-  const targetTeamId = Number(teamId);
-
-  data.teams = data.teams.filter((team) => team.id !== targetTeamId);
-
-  // 팀을 삭제하면 해당 팀의 일정과 역할도 함께 삭제
-  data.schedules = data.schedules.filter(
-    (schedule) => schedule.teamId !== targetTeamId
-  );
-
-  data.roles = data.roles.filter((role) => role.teamId !== targetTeamId);
-
   saveData(data);
 }

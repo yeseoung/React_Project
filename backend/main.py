@@ -81,3 +81,75 @@ def receive_and_print_team(team_data: TeamInput, db: Session = Depends(get_db)):
         db.rollback() # DB 저장 중 하나라도 삐끗하면 저장 전 상태로 깔끔하게 되돌림 (롤백)
         print(f"❌ DB 저장 중 에러 발생: {e}")
         raise HTTPException(status_code=500, detail="데이터베이스 저장 실패")
+    
+@app.get("/api/teams")
+def get_all_teams(db: Session = Depends(get_db)):
+    try:
+        # 1. SQLAlchemy ORM을 통해 'teams' 테이블의 모든 데이터를 조회합니다.
+        # models.py에 정의한 relationship 덕분에 team.members(팀원들)도 알아서 같이 긁어옵니다.
+        teams = db.query(model.Team).all()
+        
+        # 2. 파이썬 터미널 창에 데이터가 잘 나오는지 확인용 출력 (디버깅)
+        print("\n===== 🔍 데이터베이스에서 팀 목록 로드 완료 =====")
+        print(f"총 조회된 팀 개수: {len(teams)}개")
+        print("==================================================\n")
+        
+        # 3. 리액트 컴포넌트들이 기존에 쓰던 데이터 구조([{}, {}, {}])와 완벽히 일치하도록 가공합니다.
+        result = []
+        for team in teams:
+            result.append({
+                "id": team.id,
+                "name": team.name,
+                "description": team.description,
+                "createdBy": team.created_by,
+                # team_members 테이블에서 member_name만 쏙쏙 뽑아 문자열 배열(["장세미", "고예성"])로 만듭니다.
+                "members": [m.member_name for m in team.members] 
+            })
+            
+        return result
+
+    except Exception as e:
+        print(f"❌ DB 조회 중 에러 발생: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, 
+            detail="데이터베이스에서 팀 목록을 불러오는데 실패했습니다."
+        )
+    
+@app.delete("/api/teams/{team_id}")
+def delete_team(team_id: int, db: Session = Depends(get_db)):
+    # 1. DB에서 지우려는 팀이 존재하는지 확인
+    team = db.query(model.Team).filter(model.Team.id == team_id).first()
+    
+    # 2. 없으면 404 에러
+    if not team:
+        raise HTTPException(status_code=404, detail="존재하지 않는 팀입니다.")
+    
+    try:
+        # 3. 팀 삭제 (models.py의 cascade 설정 덕분에 team_members도 알아서 같이 지워집니다)
+        db.delete(team)
+        db.commit()
+        print(f"🗑️ DB에서 [팀 ID: {team_id}] 삭제 완료")
+        return {"status": "success", "message": f"{team_id}번 팀이 삭제되었습니다."}
+        
+    except Exception as e:
+        db.rollback()
+        print(f"❌ 삭제 중 DB 에러 발생: {e}")
+        raise HTTPException(status_code=500, detail="데이터베이스 삭제 실패")
+
+@app.get("/api/teams/{team_id}")
+def get_team_by_id(team_id: int, db: Session = Depends(get_db)):
+    # 1. URL로 들어온 team_id 값과 일치하는 팀 정보를 MySQL에서 하나 찾습니다.
+    team = db.query(model.Team).filter(model.Team.id == team_id).first()
+    
+    # 2. 없으면 404 에러를 반환합니다.
+    if not team:
+        raise HTTPException(status_code=404, detail="팀을 찾을 수 없습니다.")
+        
+    # 3. 리액트 규격에 맞춰 정제하여 리턴합니다.
+    return {
+        "id": team.id,
+        "name": team.name,
+        "description": team.description,
+        "createdBy": team.created_by,
+        "members": [m.member_name for m in team.members]
+    }
