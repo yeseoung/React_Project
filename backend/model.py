@@ -1,7 +1,7 @@
 # backend/models.py
 from sqlalchemy import Column, Integer, String, Text, ForeignKey
 from sqlalchemy.orm import relationship
-from database import Base
+from backend.database import Base
 
 # 🌟 이 클래스 이름이 'Team'으로 정확히 선언되어 있어야 합니다!
 class Team(Base):

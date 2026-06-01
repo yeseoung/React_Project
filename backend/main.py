@@ -5,8 +5,8 @@ from pydantic import BaseModel
 from typing import List, Optional
 
 # 앞서 설정한 데이터베이스 관련 파일들 임포트
-from database import get_db, engine, Base
-import model  # 테이블 모델 정의 파일 (아래 2번 참고)
+from backend.database import get_db, engine, Base
+import backend.model as model
 
 # 서버 구동 시 테이블이 없으면 자동으로 생성해주는 명령
 Base.metadata.create_all(bind=engine)
